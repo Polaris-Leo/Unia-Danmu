@@ -22,21 +22,13 @@ async function main() {
   const app = createApp(bot);
   app.listen(PORT, () => {
     console.log(`[Boot] Unia-Danmu 已启动: http://localhost:${PORT}`);
-    console.log('[Boot] API文档:');
-    console.log('  GET  /api/auth/qrcode    — 获取扫码登录二维码');
-    console.log('  GET  /api/auth/poll?key= — 轮询扫码状态');
-    console.log('  GET  /api/auth/status    — 查看登录状态');
-    console.log('  POST /api/bot/start      — 启动Bot (body: {roomId})');
-    console.log('  POST /api/bot/stop       — 停止Bot');
-    console.log('  GET  /api/bot/status     — Bot状态');
-    console.log('  POST /api/bot/send       — 手动发送弹幕 (body: {message})');
-    console.log('  GET  /api/config         — 获取配置');
-    console.log('  PUT  /api/config         — 更新全量配置');
-    console.log('  PUT  /api/config/gift    — 更新礼物答谢配置');
-    console.log('  PUT  /api/config/enter   — 更新进房欢迎配置');
-    console.log('  PUT  /api/config/share   — 更新感谢分享配置');
-    console.log('  PUT  /api/config/autoReply — 更新自动回复配置');
-    console.log('  PUT  /api/config/timing  — 更新定时发送配置');
+
+    if (process.env.ROOM_ID) {
+      console.log(`[Boot] 自动启动 Bot，房间号: ${process.env.ROOM_ID}`);
+      bot.start().catch(e => console.error('[Boot] 自动启动失败:', e.message));
+    } else {
+      console.warn('[Boot] 未配置 ROOM_ID，请在 .env 中设置后重启');
+    }
   });
 }
 

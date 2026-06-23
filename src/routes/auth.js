@@ -1,4 +1,5 @@
 import express from 'express';
+import axios from 'axios';
 import {
   generateQRCode,
   pollQRCode,
@@ -7,6 +8,8 @@ import {
   QR_CODE_STATUS,
 } from '../services/bilibiliAuth.js';
 import { clearCookies } from '../services/cookieManager.js';
+
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 export function createAuthRouter(bot) {
   const router = express.Router();
@@ -60,6 +63,23 @@ export function createAuthRouter(bot) {
     }
     const userInfo = await fetchUserInfo(cookies).catch(() => null);
     res.json({ success: true, data: userInfo || { isLogin: false } });
+  });
+
+  router.get('/avatar', async (req, res) => {
+    const { url } = req.query;
+    if (!url || !url.startsWith('https://i')) return res.status(400).end();
+    try {
+      const imgRes = await axios.get(url, {
+        responseType: 'stream',
+        timeout: 5000,
+        headers: { 'User-Agent': UA, 'Referer': 'https://www.bilibili.com/' },
+      });
+      res.setHeader('Content-Type', imgRes.headers['content-type'] || 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      imgRes.data.pipe(res);
+    } catch {
+      res.status(502).end();
+    }
   });
 
   return router;

@@ -1,0 +1,9 @@
+services:
+  unia-danmu:
+    build: .
+    ports:
+      - "${PORT:-3200}:${PORT:-3200}"
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

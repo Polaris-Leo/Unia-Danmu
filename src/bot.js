@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { BilibiliLiveWS } from './services/bilibiliLiveWS.js';
 import { DanmuSender } from './services/danmuSender.js';
 import { loadCookies, saveCookies } from './services/cookieManager.js';
@@ -8,8 +9,9 @@ import { ShareHandler } from './handlers/shareHandler.js';
 import { AutoReplyHandler } from './handlers/autoReplyHandler.js';
 import { TimingHandler } from './handlers/timingHandler.js';
 
-export class DanmuBot {
+export class DanmuBot extends EventEmitter {
   constructor() {
+    super();
     this._config = loadConfig();
     this._cookies = null;
     this._selfUid = null;
@@ -122,13 +124,28 @@ export class DanmuBot {
     this._handlers.autoReply = new AutoReplyHandler(this._sender, getConfig, anchorId, this._selfUid);
     this._handlers.timing = new TimingHandler(this._sender, getConfig);
 
-    this._ws.onGift = (e) => this._handlers.gift.handle(e);
-    this._ws.onEnter = (e) => this._handlers.enter.handle(e);
-    this._ws.onShare = (e) => this._handlers.share.handle(e);
-    this._ws.onDanmaku = (e) => this._handlers.autoReply.handle(e);
-
+    this._ws.onDanmaku = (e) => {
+      this._handlers.autoReply.handle(e);
+      this.emit('message', { type: 'danmaku', ...e, ts: Date.now() });
+    };
+    this._ws.onGift = (e) => {
+      this._handlers.gift.handle(e);
+      this.emit('message', { type: 'gift', ...e, ts: Date.now() });
+    };
+    this._ws.onGuard = (e) => {
+      this.emit('message', { type: 'guard', ...e, ts: Date.now() });
+    };
+    this._ws.onEnter = (e) => {
+      this._handlers.enter.handle(e);
+      this.emit('message', { type: 'enter', ...e, ts: Date.now() });
+    };
+    this._ws.onShare = (e) => {
+      this._handlers.share.handle(e);
+      this.emit('message', { type: 'share', ...e, ts: Date.now() });
+    };
     this._ws.onLiveStatus = ({ isLive }) => {
       console.log(`[Bot] 直播状态: ${isLive ? '开播' : '下播'}`);
+      this.emit('message', { type: 'live', isLive, ts: Date.now() });
     };
   }
 

@@ -43,15 +43,18 @@ function ensureDataDir() {
 
 export function loadConfig() {
   ensureDataDir();
+  const envRoomId = process.env.ROOM_ID ? Number(process.env.ROOM_ID) : null;
   try {
     if (fs.existsSync(CONFIG_FILE)) {
       const raw = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
-      return { ...DEFAULT_CONFIG, ...raw };
+      const merged = { ...DEFAULT_CONFIG, ...raw };
+      if (envRoomId) merged.roomId = envRoomId;
+      return merged;
     }
   } catch (e) {
     console.error('[Storage] 加载配置失败:', e.message);
   }
-  return { ...DEFAULT_CONFIG };
+  return { ...DEFAULT_CONFIG, ...(envRoomId ? { roomId: envRoomId } : {}) };
 }
 
 export function saveConfig(config) {
