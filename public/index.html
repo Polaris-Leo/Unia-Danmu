@@ -517,6 +517,16 @@ select option { background: var(--surface2); }
               <span class="toggle-thumb"></span>
             </label>
           </div>
+          <div class="toggle-row" style="margin-bottom:16px">
+            <div>
+              <div class="toggle-label" style="font-size:12px;font-weight:400;color:var(--sub)">仅在直播时响应</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="gift-onlyWhenLive">
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
           <div class="fields-row">
             <div class="field">
               <div class="field-label">最低金额（电池）</div>
@@ -559,6 +569,14 @@ select option { background: var(--surface2); }
               <span class="toggle-thumb"></span>
             </label>
           </div>
+          <div class="toggle-row" style="margin-bottom:16px">
+            <div><div class="toggle-label" style="font-size:12px;font-weight:400;color:var(--sub)">仅在直播时响应</div></div>
+            <label class="toggle">
+              <input type="checkbox" id="enter-onlyWhenLive">
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
           <div class="fields-row">
             <div class="field">
               <div class="field-label">粉丝牌过滤</div>
@@ -587,6 +605,14 @@ select option { background: var(--surface2); }
             </div>
             <label class="toggle">
               <input type="checkbox" id="share-enabled">
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+          <div class="toggle-row" style="margin-bottom:16px">
+            <div><div class="toggle-label" style="font-size:12px;font-weight:400;color:var(--sub)">仅在直播时响应</div></div>
+            <label class="toggle">
+              <input type="checkbox" id="share-onlyWhenLive">
               <span class="toggle-track"></span>
               <span class="toggle-thumb"></span>
             </label>
@@ -623,6 +649,14 @@ select option { background: var(--surface2); }
               <span class="toggle-thumb"></span>
             </label>
           </div>
+          <div class="toggle-row" style="margin-bottom:16px">
+            <div><div class="toggle-label" style="font-size:12px;font-weight:400;color:var(--sub)">仅在直播时响应</div></div>
+            <label class="toggle">
+              <input type="checkbox" id="autoReply-onlyWhenLive">
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
           <div class="messages-label" style="margin-bottom:8px">
             <span>规则列表</span>
             <button class="btn btn-ghost btn-sm" onclick="addRule()">+ 添加规则</button>
@@ -640,6 +674,14 @@ select option { background: var(--surface2); }
             </div>
             <label class="toggle">
               <input type="checkbox" id="timing-enabled">
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+          <div class="toggle-row" style="margin-bottom:16px">
+            <div><div class="toggle-label" style="font-size:12px;font-weight:400;color:var(--sub)">仅在直播时发送</div></div>
+            <label class="toggle">
+              <input type="checkbox" id="timing-onlyWhenLive">
               <span class="toggle-track"></span>
               <span class="toggle-thumb"></span>
             </label>
@@ -804,24 +846,29 @@ async function loadConfig() {
 
 function renderConfig(c) {
   el('gift-enabled').checked = !!c.gift?.enabled;
+  el('gift-onlyWhenLive').checked = !!c.gift?.onlyWhenLive;
   el('gift-minPrice').value = c.gift?.minPrice ?? 1000;
   el('gift-mergeWindow').value = c.gift?.mergeWindow ?? 10000;
   el('gift-type').value = c.gift?.type ?? 0;
   renderMessages('gift', c.gift?.messages || []);
 
   el('enter-enabled').checked = !!c.enter?.enabled;
+  el('enter-onlyWhenLive').checked = !!c.enter?.onlyWhenLive;
   el('enter-type').value = c.enter?.type ?? 0;
   renderMessages('enter', c.enter?.messages || []);
 
   el('share-enabled').checked = !!c.share?.enabled;
+  el('share-onlyWhenLive').checked = !!c.share?.onlyWhenLive;
   el('share-type').value = c.share?.type ?? 0;
   renderMessages('share', c.share?.messages || []);
 
   el('autoReply-enabled').checked = !!c.autoReply?.enabled;
+  el('autoReply-onlyWhenLive').checked = !!c.autoReply?.onlyWhenLive;
   autoReplyRules = JSON.parse(JSON.stringify(c.autoReply?.rules || []));
   renderRules();
 
   el('timing-enabled').checked = !!c.timing?.enabled;
+  el('timing-onlyWhenLive').checked = !!c.timing?.onlyWhenLive;
   el('timing-interval').value = c.timing?.interval ?? 300;
   el('timing-order').value = c.timing?.order || 'sequence';
   renderMessages('timing', c.timing?.messages || []);
@@ -990,11 +1037,11 @@ function collectRules() {
 // ─── Save ─────────────────────────────────────────────────
 async function saveSection(section) {
   const body = {
-    gift: () => ({ enabled: el('gift-enabled').checked, minPrice: +el('gift-minPrice').value||0, mergeWindow: +el('gift-mergeWindow').value||0, type: +el('gift-type').value, messages: getMessages('gift') }),
-    enter: () => ({ enabled: el('enter-enabled').checked, type: +el('enter-type').value, messages: getMessages('enter') }),
-    share: () => ({ enabled: el('share-enabled').checked, type: +el('share-type').value, messages: getMessages('share') }),
-    autoReply: () => ({ enabled: el('autoReply-enabled').checked, rules: collectRules() }),
-    timing: () => ({ enabled: el('timing-enabled').checked, interval: +el('timing-interval').value||300, order: el('timing-order').value, messages: getMessages('timing') }),
+    gift: () => ({ enabled: el('gift-enabled').checked, onlyWhenLive: el('gift-onlyWhenLive').checked, minPrice: +el('gift-minPrice').value||0, mergeWindow: +el('gift-mergeWindow').value||0, type: +el('gift-type').value, messages: getMessages('gift') }),
+    enter: () => ({ enabled: el('enter-enabled').checked, onlyWhenLive: el('enter-onlyWhenLive').checked, type: +el('enter-type').value, messages: getMessages('enter') }),
+    share: () => ({ enabled: el('share-enabled').checked, onlyWhenLive: el('share-onlyWhenLive').checked, type: +el('share-type').value, messages: getMessages('share') }),
+    autoReply: () => ({ enabled: el('autoReply-enabled').checked, onlyWhenLive: el('autoReply-onlyWhenLive').checked, rules: collectRules() }),
+    timing: () => ({ enabled: el('timing-enabled').checked, onlyWhenLive: el('timing-onlyWhenLive').checked, interval: +el('timing-interval').value||300, order: el('timing-order').value, messages: getMessages('timing') }),
   }[section]?.();
   if (!body) return;
   const res = await api(`/api/config/${section}`, 'PUT', body);
@@ -1069,6 +1116,19 @@ function updateStatusUI(d) {
   dot.className = 'status-dot ' + (d.status || 'idle');
   const labels = { idle: '未连接', connecting: '连接中', running: '运行中', error: '出错' };
   txt.textContent = labels[d.status] || d.status;
+
+  // 同步直播状态徽章
+  const badge = el('liveBadge');
+  if (d.status === 'running' && badge) {
+    if (d.isLive) {
+      badge.className = 'live-badge on';
+      badge.innerHTML = '<span class="live-badge-dot"></span>直播中';
+    } else {
+      badge.className = 'live-badge off';
+      badge.innerHTML = '<span class="live-badge-dot"></span>未开播';
+    }
+  }
+
 }
 
 // ─── Auth ─────────────────────────────────────────────────

@@ -68,7 +68,7 @@ npm run dev
 访问 `http://localhost:PORT` 打开控制台，包含：
 
 - **Header**：实时连接状态、直播间主播信息（头像/名称/标题/直播状态/分区）、账号登录状态
-- **配置面板**：礼物答谢、进房欢迎、感谢分享、自动回复规则、定时广播，所有配置可在线编辑保存
+- **配置面板**：礼物答谢、进房欢迎、感谢分享、自动回复规则、定时广播，所有配置可在线编辑保存；每个功能均可独立设置「仅在直播时响应」
 - **实时弹幕侧边栏**：滚动展示弹幕/礼物/进房/分享/上舰事件，底部支持手动发送弹幕
 
 ## API 接口
@@ -122,6 +122,7 @@ npm run dev
 {
   "gift": {
     "enabled": true,
+    "onlyWhenLive": false,
     "minPrice": 1000,
     "type": 0,
     "mergeWindow": 10000,
@@ -132,6 +133,7 @@ npm run dev
 
 | 字段 | 说明 |
 |------|------|
+| `onlyWhenLive` | `true` 时仅在主播开播期间触发，下播后忽略所有礼物事件 |
 | `minPrice` | 触发感谢的最低价格（单位：电池，1元 = 1000电池）|
 | `type` | `0` 全部 / `1` 仅本播间牌子 / `2` 仅航海 |
 | `mergeWindow` | 合并窗口（毫秒），窗口内同一用户的礼物合并后统一感谢 |
@@ -145,11 +147,16 @@ npm run dev
 {
   "enter": {
     "enabled": true,
+    "onlyWhenLive": false,
     "type": 0,
     "messages": ["欢迎 @name@ 进入直播间~"]
   }
 }
 ```
+
+| 字段 | 说明 |
+|------|------|
+| `onlyWhenLive` | `true` 时仅在开播期间响应进房/分享事件 |
 
 模板变量：`@name@` 用户名
 
@@ -159,6 +166,7 @@ npm run dev
 {
   "autoReply": {
     "enabled": true,
+    "onlyWhenLive": false,
     "rules": [
       {
         "enabled": true,
@@ -176,6 +184,7 @@ npm run dev
 
 | 字段 | 说明 |
 |------|------|
+| `onlyWhenLive` | `true` 时仅在开播期间匹配和回复弹幕 |
 | `keywords` | 触发关键字列表（OR 关系，命中任意一个即触发）|
 | `match` | `exact`（精确）/ `contains`（包含）/ `regex`（正则）|
 | `safewords` | 安全词，弹幕包含时跳过此规则（优先级高于 keywords）|
@@ -189,6 +198,7 @@ npm run dev
 {
   "timing": {
     "enabled": true,
+    "onlyWhenLive": false,
     "interval": 300,
     "order": "sequence",
     "messages": ["欢迎来到直播间～", "喜欢的话点个关注！"]
@@ -198,6 +208,7 @@ npm run dev
 
 | 字段 | 说明 |
 |------|------|
+| `onlyWhenLive` | `true` 时定时任务随开播自动启动、下播自动暂停；Bot 连接时读取初始直播状态决定是否立即开始 |
 | `interval` | 发送间隔（秒）|
 | `order` | `sequence`（顺序循环）/ `random`（随机）|
 

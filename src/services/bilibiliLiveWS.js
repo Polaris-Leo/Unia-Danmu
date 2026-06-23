@@ -47,6 +47,7 @@ export class BilibiliLiveWS {
     });
     if (res.data.code !== 0) throw new Error(`获取房间信息失败: ${res.data.message}`);
     this.anchorId = res.data.data.uid;
+    this.liveStatus = res.data.data.live_status ?? 0; // 0=未开播 1=直播中 2=轮播
     return res.data.data.room_id;
   }
 

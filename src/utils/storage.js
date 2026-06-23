@@ -10,6 +10,7 @@ const DEFAULT_CONFIG = {
   roomId: 0,
   gift: {
     enabled: false,
+    onlyWhenLive: false,
     minPrice: 1000,
     type: 0,
     mergeWindow: 10000,
@@ -17,20 +18,24 @@ const DEFAULT_CONFIG = {
   },
   enter: {
     enabled: false,
+    onlyWhenLive: false,
     type: 0,
     messages: ['欢迎 @name@ 进入直播间~'],
   },
   share: {
     enabled: false,
+    onlyWhenLive: false,
     type: 0,
     messages: ['感谢 @name@ 分享了直播间！'],
   },
   autoReply: {
     enabled: false,
+    onlyWhenLive: false,
     rules: [],
   },
   timing: {
     enabled: false,
+    onlyWhenLive: false,
     interval: 300,
     order: 'sequence',
     messages: ['欢迎来到直播间～'],

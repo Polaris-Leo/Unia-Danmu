@@ -18,6 +18,7 @@ export class DanmuBot extends EventEmitter {
     this._ws = null;
     this._sender = null;
     this._handlers = {};
+    this._isLive = false;
     this.status = 'idle'; // idle | connecting | running | error
     this.statusMsg = '';
   }
@@ -36,8 +37,25 @@ export class DanmuBot extends EventEmitter {
   /** 更新并保存配置 */
   patchConfig(partial) {
     this._config = updateConfig(partial);
-    if (this._handlers.timing) this._handlers.timing.restart();
+    this._syncTimingToLiveState();
     return this._config;
+  }
+
+  /** 指定功能是否允许在当前直播状态下响应 */
+  _shouldHandle(section) {
+    return !this._config[section]?.onlyWhenLive || this._isLive;
+  }
+
+  /** 根据 timing.onlyWhenLive + 当前直播状态同步定时任务 */
+  _syncTimingToLiveState() {
+    if (!this._handlers.timing) return;
+    if (!this._config.timing?.onlyWhenLive) {
+      this._handlers.timing.restart();
+    } else if (this._isLive) {
+      this._handlers.timing.start();
+    } else {
+      this._handlers.timing.stop();
+    }
   }
 
   /** 设置Cookie（登录后调用） */
@@ -86,8 +104,10 @@ export class DanmuBot extends EventEmitter {
     this._ws = new BilibiliLiveWS(this._config.roomId, this._cookies);
     this._ws.onConnect = () => {
       this.status = 'running';
-      // 启动定时发送
-      if (this._handlers.timing) this._handlers.timing.start();
+      // 根据初始直播状态决定是否启动定时任务
+      this._isLive = this._ws.liveStatus === 1;
+      this._syncTimingToLiveState();
+      console.log(`[Bot] 初始直播状态: ${this._isLive ? '直播中' : '未开播'}`);
     };
     this._ws.onClose = () => {
       if (this.status !== 'idle') this.status = 'connecting';
@@ -125,26 +145,28 @@ export class DanmuBot extends EventEmitter {
     this._handlers.timing = new TimingHandler(this._sender, getConfig);
 
     this._ws.onDanmaku = (e) => {
-      this._handlers.autoReply.handle(e);
+      if (this._shouldHandle('autoReply')) this._handlers.autoReply.handle(e);
       this.emit('message', { type: 'danmaku', ...e, ts: Date.now() });
     };
     this._ws.onGift = (e) => {
-      this._handlers.gift.handle(e);
+      if (this._shouldHandle('gift')) this._handlers.gift.handle(e);
       this.emit('message', { type: 'gift', ...e, ts: Date.now() });
     };
     this._ws.onGuard = (e) => {
       this.emit('message', { type: 'guard', ...e, ts: Date.now() });
     };
     this._ws.onEnter = (e) => {
-      this._handlers.enter.handle(e);
+      if (this._shouldHandle('enter')) this._handlers.enter.handle(e);
       this.emit('message', { type: 'enter', ...e, ts: Date.now() });
     };
     this._ws.onShare = (e) => {
-      this._handlers.share.handle(e);
+      if (this._shouldHandle('share')) this._handlers.share.handle(e);
       this.emit('message', { type: 'share', ...e, ts: Date.now() });
     };
     this._ws.onLiveStatus = ({ isLive }) => {
-      console.log(`[Bot] 直播状态: ${isLive ? '开播' : '下播'}`);
+      this._isLive = isLive;
+      console.log(`[Bot] 直播状态变更: ${isLive ? '开播' : '下播'}`);
+      this._syncTimingToLiveState();
       this.emit('message', { type: 'live', isLive, ts: Date.now() });
     };
   }
@@ -158,6 +180,7 @@ export class DanmuBot extends EventEmitter {
       hasCredential: !!this._cookies?.SESSDATA,
       selfUid: this._selfUid,
       cookieSource: this._cookieSource || null,
+      isLive: this._isLive,
     };
   }
 }
