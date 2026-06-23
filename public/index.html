@@ -722,7 +722,7 @@ select option { background: var(--surface2); }
       <div class="dm-empty" id="dmEmpty">等待弹幕...</div>
     </div>
     <div class="sidebar-send">
-      <input type="text" id="sendInput" placeholder="发送弹幕..." maxlength="20"
+      <input type="text" id="sendInput" placeholder="发送弹幕..."
         onkeydown="if(event.key==='Enter')sendDanmu()">
       <button class="send-btn" onclick="sendDanmu()">发送</button>
     </div>
@@ -1049,6 +1049,7 @@ async function saveSection(section) {
 }
 
 // ─── Send ─────────────────────────────────────────────────
+
 async function sendDanmu() {
   const msg = el('sendInput').value.trim();
   if (!msg) { toast('请输入弹幕内容', 'err'); return; }
